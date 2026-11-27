@@ -4,6 +4,7 @@
     { "source": "/health", "destination": "/api/index" },
     { "source": "/api/health", "destination": "/api/index" },
     { "source": "/.well-known/x402", "destination": "/api/index" },
+    { "source": "/.well-known/402index-verify.txt", "destination": "/api/index" },
     { "source": "/openapi.json", "destination": "/api/index" },
     { "source": "/llms.txt", "destination": "/api/index" },
     { "source": "/api/v1/(.*)", "destination": "/api/index" },
