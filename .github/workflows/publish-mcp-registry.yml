@@ -1,0 +1,42 @@
+name: Publish to Official MCP Registry
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish io.github.Zluowa/domain-ai-sec-auditor via GitHub OIDC
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      MCP_PUBLISHER_VERSION: v1.8.18
+      MCP_PUBLISHER_SHA256: 9497333e58d49117db1dd4241a564760821308c73cca17a2f3ca26008df6f42b
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Download and verify mcp-publisher
+        run: |
+          set -euo pipefail
+          archive="mcp-publisher_linux_amd64.tar.gz"
+          url="https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}/${archive}"
+          curl --fail --location --silent --show-error --output "${archive}" "${url}"
+          echo "${MCP_PUBLISHER_SHA256}  ${archive}" | sha256sum -c -
+          tar -xzf "${archive}" mcp-publisher
+          chmod +x ./mcp-publisher
+          ./mcp-publisher --version
+
+      - name: Login to MCP Registry via GitHub OIDC
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish to Official MCP Registry
+        run: ./mcp-publisher publish
