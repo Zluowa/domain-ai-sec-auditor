@@ -531,6 +531,57 @@ describe('4. Vercel x402 v2 Base Mainnet USDC Handler', () => {
     assert.equal(res.statusCode, 503);
   });
 
+  it('supports Aegis GET/HEAD probes with 402 + Allow: POST and rejects signed GET/HEAD with 405 before /verify', async () => {
+    let facCalls = 0;
+    const handler = createVercelHandler(
+      {
+        X402_PAY_TO: TEST_PAY_TO,
+        X402_AMOUNT_USDC: '5000',
+        X402_NETWORK: 'eip155:8453',
+        X402_FACILITATOR_URL: 'https://facilitator.payai.network',
+      },
+      {
+        fetchImpl: async () => {
+          facCalls++;
+          throw new Error('Facilitator must NEVER be called on GET/HEAD');
+        },
+      }
+    );
+
+    const resGet = makeMockRes();
+    await handler({ method: 'GET', url: '/api/v1/audit-domain', headers: { host: 'auditor.vercel.app', 'x-forwarded-proto': 'https' } }, resGet);
+    assert.equal(resGet.statusCode, 402);
+    assert.equal(resGet.headers.Allow, 'POST');
+    assert.ok(resGet.headers['PAYMENT-REQUIRED']);
+    assert.equal(resGet.json().method, 'POST');
+    assert.ok(resGet.json().exampleBody);
+
+    const resHead = makeMockRes();
+    await handler({ method: 'HEAD', url: '/api/v1/audit-domain', headers: { host: 'auditor.vercel.app', 'x-forwarded-proto': 'https' } }, resHead);
+    assert.equal(resHead.statusCode, 402);
+    assert.equal(resHead.headers.Allow, 'POST');
+    assert.equal(resHead.body, '');
+
+    const fakeSig = toBase64Utf8(JSON.stringify({ x402Version: 2, payload: { signature: '0xabc' } }));
+    const resSignedGet = makeMockRes();
+    await handler({ method: 'GET', url: '/api/v1/audit-domain', headers: { host: 'auditor.vercel.app', 'payment-signature': fakeSig } }, resSignedGet);
+    assert.equal(resSignedGet.statusCode, 405);
+    assert.equal(resSignedGet.headers.Allow, 'POST');
+    assert.equal(facCalls, 0);
+
+    const resUnknown = makeMockRes();
+    await handler({ method: 'GET', url: '/api/v1/unknown', headers: { host: 'auditor.vercel.app' } }, resUnknown);
+    assert.equal(resUnknown.statusCode, 404);
+
+    const resClaim = makeMockRes();
+    await handler(
+      { method: 'GET', url: '/.well-known/402index-verify.txt', headers: { host: 'agentready-websec-x402-api.vercel.app' } },
+      resClaim
+    );
+    assert.equal(resClaim.statusCode, 200);
+    assert.equal(resClaim.body, '0a5ee0c1be2cb1946f4eb6d51dcb92320d4b97d5d5193e7f1b14c277688b1d01');
+  });
+
   it('catches facilitator network errors as HTTP 503 and enforces streaming/DNS timeouts, charge-before-push 402 safety, and zero WAF false findings', async () => {
     // 1) Facilitator network error -> HTTP 503 without throwing
     const handler = createVercelHandler(
