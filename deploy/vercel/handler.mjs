@@ -38,7 +38,7 @@ export const SUPPORTED_POST_ROUTES = new Set(['/api/v1/audit-domain']);
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, PAYMENT-SIGNATURE, X-PAYMENT',
   'Access-Control-Expose-Headers': 'PAYMENT-REQUIRED, PAYMENT-RESPONSE',
 };
@@ -219,6 +219,21 @@ export function createVercelHandler(
       return;
     }
 
+    if (req.method === 'GET' && pathname === '/.well-known/402index-verify.txt') {
+      const verifyHash = String(
+        env?.INDEX402_VERIFY_HASH ||
+          (hostHeader.toLowerCase().includes('agentready-websec-x402-api.vercel.app')
+            ? '0a5ee0c1be2cb1946f4eb6d51dcb92320d4b97d5d5193e7f1b14c277688b1d01'
+            : '')
+      ).trim();
+      if (verifyHash) {
+        sendText(res, 200, verifyHash);
+        return;
+      }
+      sendJson(res, 404, { error: 'Not Found' });
+      return;
+    }
+
     if (req.method === 'GET' && pathname === '/') {
       sendJson(res, 200, {
         service: 'agentready-websec-domain-auditor',
@@ -234,6 +249,65 @@ export function createVercelHandler(
           'POST /api/v1/audit-domain',
         ],
       });
+      return;
+    }
+
+    // Aegis / x402 directory compatibility: allow GET/HEAD probing on paid POST routes without ever settling
+    if ((req.method === 'GET' || req.method === 'HEAD') && SUPPORTED_POST_ROUTES.has(pathname)) {
+      const sigHeader = getHeader(req, 'payment-signature') || getHeader(req, 'x-payment');
+      if (sigHeader || !payTo) {
+        const headers = { 'Content-Type': 'application/json; charset=utf-8', ...CORS_HEADERS, Allow: 'POST' };
+        if (req.method === 'HEAD') {
+          res.writeHead(405, headers);
+          res.end();
+          return;
+        }
+        sendJson(
+          res,
+          405,
+          {
+            error: 'Method Not Allowed',
+            reason: sigHeader
+              ? 'Paid execution requires POST with a JSON body. Payment signature was NOT verified or settled.'
+              : 'Use POST with a JSON body to invoke this endpoint.',
+            method: 'POST',
+            allowedMethod: 'POST',
+          },
+          { Allow: 'POST' }
+        );
+        return;
+      }
+
+      const resourceUrl = resolveCanonicalResourceUrl(pathname, { hostHeader, forwardedProto, publicBaseUrl });
+      const bazaarExt = buildBazaarExtension(pathname);
+      const challenge = buildX402PaymentRequired({
+        recipientAddress: payTo,
+        amountUsdcAtomic: amountUsdc,
+        network,
+        resource: resourceUrl,
+        description: 'AgentReady & WebSec Domain Audit (AI Bots, llms.txt, Headers, TLS, SPF/DMARC)',
+        extensions: bazaarExt,
+      });
+      const extraHeaders = {
+        'PAYMENT-REQUIRED': challenge.headers['PAYMENT-REQUIRED'],
+        Allow: 'POST',
+      };
+      if (req.method === 'HEAD') {
+        res.writeHead(402, { 'Content-Type': 'application/json; charset=utf-8', ...CORS_HEADERS, ...extraHeaders });
+        res.end();
+        return;
+      }
+      sendJson(
+        res,
+        402,
+        {
+          ...build402Body(challenge.payload, 'Payment Required'),
+          method: 'POST',
+          allowedMethod: 'POST',
+          exampleBody: bazaarExt?.bazaar?.info?.input?.body ?? {},
+        },
+        extraHeaders
+      );
       return;
     }
 
