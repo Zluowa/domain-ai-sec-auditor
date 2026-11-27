@@ -1,5 +1,17 @@
 {
-  "actorSpecification": 1,
-  "fields": {},
-  "template": "{{links.apiDefaultDatasetUrl}}/items?view=overview"
+  "actorOutputSchemaVersion": 1,
+  "title": "AgentReady & WebSec Bulk Domain Audit Output",
+  "description": "Structured per-domain AI-Readiness (llms.txt, AI bots, JSON-LD) and OWASP WebSec (HTTP headers, TLS, DNS SPF/DMARC/CAA) audit results.",
+  "properties": {
+    "overview": {
+      "type": "string",
+      "title": "Domain Audit Overview Dataset",
+      "template": "{{links.apiDefaultDatasetUrl}}/items?view=overview"
+    },
+    "report": {
+      "type": "string",
+      "title": "Full JSON Output Record",
+      "template": "{{links.apiDefaultKeyValueStoreUrl}}/records/OUTPUT"
+    }
+  }
 }
