@@ -9,6 +9,19 @@
   "bin": {
     "agentready-audit": "./cli/agentready.mjs"
   },
+  "files": [
+    "cli/",
+    "src/",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zluowa/domain-ai-sec-auditor.git"
+  },
+  "homepage": "https://github.com/Zluowa/domain-ai-sec-auditor#readme",
+  "bugs": {
+    "url": "https://github.com/Zluowa/domain-ai-sec-auditor/issues"
+  },
   "scripts": {
     "start": "node src/apify-actor.mjs",
     "cli": "node cli/agentready.mjs",
