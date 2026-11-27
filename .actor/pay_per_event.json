@@ -1,0 +1,16 @@
+{
+  "minimalMaxTotalChargeUsd": 0.05,
+  "events": {
+    "apify-actor-start": {
+      "eventTitle": "Actor start (platform automatic)",
+      "eventDescription": "Automatically charged once per Actor run by Apify platform (covers first 5 seconds of compute). Never charged manually in code.",
+      "eventPriceUsd": 0.001
+    },
+    "domain-audited": {
+      "eventTitle": "Domain audited (5-pillar AI-Readiness + WebSec)",
+      "eventDescription": "Charged per successfully audited public domain across AI crawlers/llms.txt/JSON-LD, HTTP security headers, TLS certificate, DNS SPF/DMARC/CAA, and security.txt. Invalid, SSRF-blocked, or unreachable domains incur $0.",
+      "eventPriceUsd": 0.01,
+      "isPrimaryEvent": true
+    }
+  }
+}

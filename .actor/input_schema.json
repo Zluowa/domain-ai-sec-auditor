@@ -1,0 +1,38 @@
+{
+  "title": "AgentReady & WebSec Bulk Domain Auditor Input",
+  "description": "Audit up to 100 domains or URLs in one fast browserless run for AI-readiness (robots.txt 12 AI crawlers, /llms.txt, agent.json, JSON-LD) and web security (HTTP headers, TLS certificate, DNS SPF/DMARC/CAA, security.txt). Invalid, SSRF-blocked, or completely unreachable domains incur zero charge.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": ["urls"],
+  "properties": {
+    "urls": {
+      "title": "Domains or URLs to Audit (1–100)",
+      "type": "array",
+      "description": "List of public domains or HTTP(S) URLs to audit (max 100 per run). Example: [\"https://example.com\", \"stripe.com\"]. Private/internal IPs and non-80/443 ports are automatically rejected with zero charge.",
+      "editor": "stringList",
+      "prefill": ["https://example.com"]
+    },
+    "concurrency": {
+      "title": "Concurrent Domains (1–5)",
+      "type": "integer",
+      "description": "Number of domains to audit concurrently in this run (1 to 5). Lower values reduce rate-limiting on shared origins.",
+      "default": 5,
+      "minimum": 1,
+      "maximum": 5
+    },
+    "timeoutMs": {
+      "title": "Per-Probe Timeout (ms)",
+      "type": "integer",
+      "description": "Timeout in milliseconds for each HTTP/TLS network probe (500 to 15000 ms, default 4000 ms).",
+      "default": 4000,
+      "minimum": 500,
+      "maximum": 15000
+    },
+    "includeMarkdown": {
+      "title": "Include Markdown Executive Summary",
+      "type": "boolean",
+      "description": "Attach a ready-to-share Markdown summary table and key findings list to each audited domain record.",
+      "default": false
+    }
+  }
+}

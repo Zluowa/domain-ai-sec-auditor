@@ -1,0 +1,32 @@
+{
+  "name": "domain-ai-sec-auditor",
+  "version": "1.0.0",
+  "description": "AgentReady & WebSec Bulk Domain Auditor — Zero-dependency pure Node.js 24 auditor for AI Crawler readiness (robots.txt 12 AI bots, llms.txt, agent.json, JSON-LD), HTTP Security Headers, TLS certificates, DNS SPF/DMARC/CAA, and security.txt. Supports Apify PPE Actor and Vercel x402 v2 Base USDC API.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "bin": {
+    "agentready-audit": "./cli/agentready.mjs"
+  },
+  "scripts": {
+    "start": "node src/apify-actor.mjs",
+    "cli": "node cli/agentready.mjs",
+    "test": "node --test test/*.test.mjs",
+    "build:vercel": "node scripts/build-vercel-bundle.mjs"
+  },
+  "keywords": [
+    "llms-txt",
+    "ai-readiness",
+    "geo-audit",
+    "robots-txt",
+    "security-headers",
+    "tls-audit",
+    "dmarc",
+    "spf",
+    "apify",
+    "x402",
+    "mcp"
+  ],
+  "license": "MIT"
+}

@@ -1,0 +1,65 @@
+{
+  "actorSpecification": 1,
+  "name": "agentready-websec-bulk-auditor",
+  "title": "AgentReady & WebSec Bulk Domain Auditor — llms.txt, AI Bots, SSL, Security Headers & DMARC",
+  "description": "Zero-browser pure Node.js 24 bulk auditor (up to 100 domains/run) checking AI Search/GEO readiness (robots.txt 12 AI crawlers, /llms.txt, /sitemap.xml, /.well-known/agent.json, JSON-LD) plus OWASP HTTP security headers, TLS certificates, DNS SPF/DMARC/CAA, and security.txt.",
+  "version": "1.0",
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 256,
+  "meta": {
+    "templateId": "zero-dependency-node24-ppe"
+  },
+  "input": "./input_schema.json",
+  "output": "./output_schema.json",
+  "dockerfile": "../Dockerfile",
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "title": "Domain AI-Readiness & WebSec Audit Results",
+      "views": {
+        "overview": {
+          "title": "Overview",
+          "transformation": {
+            "fields": [
+              "domain",
+              "status",
+              "overallScore",
+              "grade",
+              "aiReadinessScore",
+              "httpSecurityScore",
+              "tlsScore",
+              "dnsScore",
+              "hasLlmsTxt",
+              "aiBotsAllowed",
+              "dmarcPolicy",
+              "spfPolicy",
+              "tlsDaysUntilExpiry",
+              "httpChallengeDetected",
+              "chargedUsd"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "domain": { "label": "Domain", "format": "text" },
+              "status": { "label": "Status", "format": "text" },
+              "overallScore": { "label": "Overall", "format": "number" },
+              "grade": { "label": "Grade", "format": "text" },
+              "aiReadinessScore": { "label": "AI Ready", "format": "number" },
+              "httpSecurityScore": { "label": "HTTP Sec", "format": "number" },
+              "tlsScore": { "label": "TLS", "format": "number" },
+              "dnsScore": { "label": "DNS", "format": "number" },
+              "hasLlmsTxt": { "label": "llms.txt", "format": "boolean" },
+              "aiBotsAllowed": { "label": "AI Bots OK", "format": "number" },
+              "dmarcPolicy": { "label": "DMARC", "format": "text" },
+              "spfPolicy": { "label": "SPF", "format": "text" },
+              "tlsDaysUntilExpiry": { "label": "SSL Days", "format": "number" },
+              "httpChallengeDetected": { "label": "WAF", "format": "boolean" },
+              "chargedUsd": { "label": "Charged ($)", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
